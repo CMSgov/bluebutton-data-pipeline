@@ -37,6 +37,7 @@ node {
 	stage 'Archive'
 		step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true])
 		step([$class: 'ArtifactArchiver', artifacts: '**/target/*.war', fingerprint: true, allowEmptyArchive: true])
+		step([$class: 'ArtifactArchiver', artifacts: '**/target/*.x', fingerprint: true, allowEmptyArchive: true])
 		step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml', allowEmptyResults: true])
 		step([$class: 'JUnitResultArchiver', testResults: '**/target/failsafe-reports/TEST-*.xml', allowEmptyResults: true])
 		
