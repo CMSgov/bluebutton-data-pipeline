@@ -30,8 +30,7 @@ node {
 			variable: 'SETTINGS_PATH']]
 		]) {
 			// Run the build.
-			// FIXME: re-enable ITs once I can get them passing in the CI env
-			mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -DskipITs=true clean deploy scm:tag"
+			mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
 		}
 	
 	stage 'Archive'
