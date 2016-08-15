@@ -22,16 +22,28 @@ node {
 		setPomVersionUsingBuildId()
 	
 	stage 'Build'
-		/* Create the settings file for Maven (contains deploy credentials). 
+		/* 
+		 * Create the settings file for Maven (contains deploy credentials). 
 		 * Will be automatically cleaned up at end of block.
 		 */
 		wrap([$class: 'ConfigFileBuildWrapper', 
-			managedFiles: [[fileId: 'org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig:cms-bluebutton-settings-xml', 
-			variable: 'SETTINGS_PATH']]
+				managedFiles: [[fileId: 'org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig:cms-bluebutton-settings-xml', 
+				variable: 'SETTINGS_PATH']]
 		]) {
-			// Run the build.
-			mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
-		}
+		
+			/*
+			 * Pull the AWS credentials from Jenkins credentials store into the build environment. Some of the ITs need 
+			 * these. For example, DataSetMonitorIT uses them to create and teardown S3 buckets in tests.
+			 */
+			withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+					credentialsId: 'aws-credentials-builds',  
+					accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+				
+				// Run the build.
+				mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
+				
+			}
+		}		
 	
 	stage 'Archive'
 		step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true])
