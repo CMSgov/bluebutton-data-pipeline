@@ -30,7 +30,7 @@ node {
 			variable: 'SETTINGS_PATH']]
 		]) {
 			// Run the build.
-			mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
+			mvn "--settings ${env.SETTINGS_PATH} -X -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
 		}
 	
 	stage 'Archive'
