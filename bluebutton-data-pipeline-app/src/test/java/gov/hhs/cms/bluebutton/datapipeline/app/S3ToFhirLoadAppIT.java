@@ -25,8 +25,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 
-import gov.hhs.cms.bluebutton.datapipeline.app.AppConfiguration;
-import gov.hhs.cms.bluebutton.datapipeline.app.S3ToFhirLoadApp;
 import gov.hhs.cms.bluebutton.datapipeline.fhir.load.FhirTestUtilities;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
@@ -70,7 +68,7 @@ public final class S3ToFhirLoadAppIT {
 	 * The address of the FHIR server to run against. See this project's
 	 * <code>pom.xml</code> for details on how it's stood up.
 	 */
-	private static final String FHIR_API = "http://localhost:9093/baseDstu2";
+	private static final String FHIR_API = "http://localhost:8080/baseDstu2";
 
 	/**
 	 * The POSIX signal number for the <code>SIGTERM</code> signal.
