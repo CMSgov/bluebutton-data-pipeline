@@ -132,15 +132,15 @@
 					<version>1.5.0</version>
 					<configuration>
 						<container>
-							<containerId>jetty9x</containerId>
+							<containerId>wildfly10x</containerId>
 							<artifactInstaller>
 								<!-- Use a throwaway Jetty install (in the project's target/ directory) 
 									to run the ITs. Tried using an embedded Jetty instance via Cargo, but the 
 									web application fails to deploy that way for some reason: it throws "java.lang.IllegalStateException: 
 									zip file closed" errors. -->
-								<groupId>org.eclipse.jetty</groupId>
-								<artifactId>jetty-distribution</artifactId>
-								<version>9.3.10.v20160621</version>
+								<groupId>org.wildfly</groupId>
+								<artifactId>wildfly-dist</artifactId>
+								<version>10.1.0.Final</version>
 							</artifactInstaller>
 							<log>${project.build.directory}/failsafe-reports/cargo.log</log>
 							<output>${project.build.directory}/failsafe-reports/cargo-container.log</output>
@@ -170,10 +170,61 @@
 
 								<!-- Wait up to 120s for the webapp to become available at the specified 
 									URL. -->
-								<pingURL>http://localhost:9093/</pingURL>
+								<pingURL>http://localhost:9093/baseDstu2/metadata</pingURL>
 								<pingTimeout>120000</pingTimeout>
 							</deployable>
 						</deployables>
+					</configuration>
+				</plugin>
+				<plugin>
+					<!-- WildFly is used in production (and in our ITs here) to run the 
+						Blue Button FHIR server. This plugin can be used to download, configure, 
+						and run WildFly during our ITs (see below). -->
+					<groupId>org.wildfly.plugins</groupId>
+					<artifactId>wildfly-maven-plugin</artifactId>
+					<version>1.1.0.Alpha11</version>
+
+					<!-- All of the configuration (for each of the various goals used) is 
+						specified here so that we can run the goals individually when needed, e.g. 
+						from the command line. We're a bit lucky that none of the settings are re-used 
+						between the goals, which makes this possible. -->
+					<configuration>
+						<!-- Used by the start goal. Specifies the version of WildFly to download 
+							and run. -->
+						<artifact>org.wildfly:wildfly-dist:10.1.0.Final</artifact>
+
+						<!-- Used by the start goal. Specifies the HTTPS port. -->
+						<server-args>
+							<server-arg>-Djboss.https.port=9943</server-arg>
+						</server-args>
+
+						<!-- Used by the execute-commands goal. -->
+						<commands>
+							<!-- Set the Java system properties that are required to configure 
+								the FHIR server. -->
+							<command>/system-property=bbfhir.db.url:add(value="${its.bbfhir.db.url}")</command>
+							<command>/system-property=bbfhir.db.username:add(value="${its.bbfhir.db.username}")</command>
+							<command>/system-property=bbfhir.db.password:add(value="${its.bbfhir.db.password}")</command>
+
+							<!-- Configure server-auth SSL using a pre-generated keystore. -->
+							<command>/core-service=management/security-realm=ApplicationRealm/server-identity=ssl/:write-attribute(name=keystore-path,value="../../../../../../dev/ssl-keystores-for-fhir/server.keystore")</command>
+							<command>/core-service=management/security-realm=ApplicationRealm/server-identity=ssl/:write-attribute(name=keystore-password,value=changeit)</command>
+							<command>/core-service=management/security-realm=ApplicationRealm/server-identity=ssl/:write-attribute(name=key-password,value=changeit)</command>
+
+							<!-- Configure and enable mandatory client-auth SSL using a pre-generated 
+								truststore. -->
+							<command>/core-service=management/security-realm=ApplicationRealm/authentication=truststore:add(keystore-path="../../../../../../dev/ssl-keystores-for-fhir/server.truststore",keystore-password=changeit)</command>
+							<command>/subsystem=undertow/server=default-server/https-listener=https/:write-attribute(name=verify-client,value=REQUIRED)</command>
+						</commands>
+
+						<!-- Used by the deploy-artifact goal. Specifies the artifact to deploy. -->
+						<groupId>gov.hhs.cms.bluebutton.fhir</groupId>
+						<artifactId>bbonfhir-server-app</artifactId>
+						<type>war</type>
+
+						<!-- Used by the deploy-artifact goal. WildFly deploys WARs with this 
+							name to the container's root context path (i.e. 'http://localhost:9093/'). -->
+						<name>ROOT.war</name>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -193,12 +244,11 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- Launch an embedded Jetty instance hosting the Blue Button FHIR server 
-					prior to running this project's integration tests, and stop it after the 
-					integration tests. Alternatively, for manual testing, manually run 'mvn cargo:run' 
-					to start the Jetty server. -->
-				<groupId>org.codehaus.cargo</groupId>
-				<artifactId>cargo-maven2-plugin</artifactId>
+				<!-- WildFly is used in in our ITs to run the Blue Button FHIR server. 
+					It will download, configure, and run WildFly before the ITs, and stop it 
+					after. -->
+				<groupId>org.wildfly.plugins</groupId>
+				<artifactId>wildfly-maven-plugin</artifactId>
 				<executions>
 					<execution>
 						<id>start-container</id>
@@ -208,10 +258,43 @@
 						</goals>
 					</execution>
 					<execution>
+						<id>configure-container-commands</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>execute-commands</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>configure-container-reload</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>shutdown</goal>
+						</goals>
+						<configuration>
+							<!-- We can't just call `:reload` in execute-commands, as that will 
+								happen asynchronously. Ends up breaking the `deploy-artifact` execution, 
+								as the server isn't ready yet. -->
+							<reload>true</reload>
+						</configuration>
+
+						<!-- FIXME But! This goal also doesn't quite work, due to https://issues.jboss.org/browse/WFMP-58. 
+							It also runs aysnchronously, which will break the next goal (`deploy-artifact`). 
+							Until that's fixed, we're out of luck here; can't be made to work. (Note: 
+							if we try to deploy then reload, the ITs will run into the same race condition 
+							and fail, instead.) -->
+					</execution>
+					<execution>
+						<id>configure-container-deploy</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>deploy-artifact</goal>
+						</goals>
+					</execution>
+					<execution>
 						<id>stop-container</id>
 						<phase>post-integration-test</phase>
 						<goals>
-							<goal>stop</goal>
+							<goal>shutdown</goal>
 						</goals>
 					</execution>
 				</executions>
