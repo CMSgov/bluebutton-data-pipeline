@@ -40,7 +40,7 @@ node {
 					accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 				
 				// Run the build.
-				mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db clean deploy scm:tag"
+				mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db -U clean deploy scm:tag"
 				
 			}
 		}		
