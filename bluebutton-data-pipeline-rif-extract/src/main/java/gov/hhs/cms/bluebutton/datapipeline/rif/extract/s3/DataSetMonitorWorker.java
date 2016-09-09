@@ -37,13 +37,13 @@ import gov.hhs.cms.bluebutton.datapipeline.rif.model.RifFilesEvent;
 
 /**
  * <p>
- * Acts as a worker {@link Runnable} for {@link DataSetMonitor}. It is expected that
- * this will be run on a repeating basis, via a {@link ScheduledExecutorService}
- * .
+ * Acts as a worker {@link Runnable} for {@link DataSetMonitor}. It is expected
+ * that this will be run on a repeating basis, via a
+ * {@link ScheduledExecutorService} .
  * </p>
  * <p>
- * When executed via {@link #run()}, the {@link DataSetMonitorWorker} will scan the
- * specified Amazon S3 bucket. It will look for <code>manifest.xml</code>
+ * When executed via {@link #run()}, the {@link DataSetMonitorWorker} will scan
+ * the specified Amazon S3 bucket. It will look for <code>manifest.xml</code>
  * objects/files and select the oldest one available. If such a manifest is
  * found, it will then wait for all of the objects in the data set represented
  * by it to become available. Once they're all available, it will kick off the
@@ -126,8 +126,9 @@ final class DataSetMonitorWorker implements Runnable {
 		}
 
 		// We've found the oldest manifest. Now go download and parse it.
-		LOGGER.info("Found data set to process: '{}'. Waiting for it to finish uploading...", manifestToProcessKey);
 		DataSetManifest dataSetManifest = readManifest(manifestToProcessKey);
+		LOGGER.info("Found data set to process at '{}': '{}'. Waiting for it to finish uploading...",
+				manifestToProcessKey, dataSetManifest.toString());
 
 		/*
 		 * We've got a dataset to process. However, it might still be uploading
@@ -280,7 +281,8 @@ final class DataSetMonitorWorker implements Runnable {
 			 * stripping the timestamp prefix and slash from each of them.
 			 */
 			Set<String> namesForObjectsInPage = objectListing.getObjectSummaries().stream().map(s -> s.getKey())
-					.map(k -> k.substring(dataSetKeyPrefix.length())).collect(Collectors.toSet());
+					.peek(s -> LOGGER.debug("Found object: '{}'", s)).map(k -> k.substring(dataSetKeyPrefix.length()))
+					.collect(Collectors.toSet());
 			dataSetObjectNames.addAll(namesForObjectsInPage);
 
 			// On to the next page! (If any.)
