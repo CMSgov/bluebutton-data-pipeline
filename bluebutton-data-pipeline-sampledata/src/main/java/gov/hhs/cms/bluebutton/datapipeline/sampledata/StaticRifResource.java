@@ -14,50 +14,57 @@ public enum StaticRifResource {
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_CARRIER}, and adjusting its beneficiary
+	 * {@link StaticRifResource#SAMPLE_B_CARRIER}, and adjusting its beneficiary
 	 * to match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_CARRIER("rif-static-samples/sample-a-bcarrier.txt", RifFileType.CARRIER, 1),
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_INPATIENT}, and adjusting its
-	 * beneficiary to match {@link #SAMPLE_A_INPATIENT}.
+	 * {@link StaticRifResource#SAMPLE_B_INPATIENT}, and adjusting its
+	 * beneficiary to match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_INPATIENT("rif-static-samples/sample-a-inpatient.txt", RifFileType.INPATIENT, 1),
 
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_OUTPATIENT}, and adjusting its
-	 * beneficiary to match {@link #SAMPLE_A_OUTPATIENT}.
+	 * {@link StaticRifResource#SAMPLE_B_OUTPATIENT}, and adjusting its
+	 * beneficiary to match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_OUTPATIENT("rif-static-samples/sample-a-outpatient.txt", RifFileType.OUTPATIENT, 1),
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_SNF}, and adjusting its beneficiary to
-	 * match {@link #SAMPLE_A_SNF}.
+	 * {@link StaticRifResource#SAMPLE_B_SNF}, and adjusting its beneficiary to
+	 * match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_SNF("rif-static-samples/sample-a-snf.txt", RifFileType.SNF, 1),
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_HOSPICE}, and adjusting its beneficiary
-	 * to match {@link #SAMPLE_A_HOSPICE}.
+	 * {@link StaticRifResource#SAMPLE_B_HOSPICE}, and adjusting its beneficiary
+	 * to match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_HOSPICE("rif-static-samples/sample-a-hospice.txt", RifFileType.HOSPICE, 1),
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_A_HHA}, and adjusting its beneficiary to
-	 * match {@link #SAMPLE_A_HHA}.
+	 * {@link StaticRifResource#SAMPLE_B_HHA}, and adjusting its beneficiary to
+	 * match {@link #SAMPLE_A_BENES}.
 	 */
 	SAMPLE_A_HHA("rif-static-samples/sample-a-hha.txt", RifFileType.HHA, 1),
 
 	/**
 	 * This file was manually created by copying a single claim from
-	 * {@link StaticRifResource#SAMPLE_B_CARRIER}, adjusting its beneficiary to
+	 * {@link StaticRifResource#SAMPLE_B_DME}, and adjusting its beneficiary to
+	 * match {@link #SAMPLE_A_BENES}.
+	 */
+	SAMPLE_A_DME("rif-static-samples/sample-a-dme.txt", RifFileType.DME, 1),
+
+	/**
+	 * This file was manually created by copying a single claim from
+	 * {@link StaticRifResource#SAMPLE_B_PDE}, adjusting its beneficiary to
 	 * match {@link #SAMPLE_A_BENES}, and editing some of the values to be
 	 * better suited for testing against.
 	 */
@@ -81,6 +88,8 @@ public enum StaticRifResource {
 	SAMPLE_B_HOSPICE("rif-static-samples/sample-b-hospice.txt", RifFileType.HOSPICE, 9),
 
 	SAMPLE_B_HHA("rif-static-samples/sample-b-hha.txt", RifFileType.HHA, 22),
+
+	SAMPLE_B_DME("rif-static-samples/sample-b-dme.txt", RifFileType.DME, 82),
 
 	SAMPLE_B_PDE("rif-static-samples/sample-b-pde.txt", RifFileType.PDE, 1195);
 
