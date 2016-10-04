@@ -1450,7 +1450,6 @@ public final class DataTransformerTest {
 				medication.getCode().getCoding().get(0));
 		Assert.assertEquals(HTTPVerb.PUT, medicationEntry.getRequest().getMethod());
 		Assert.assertEquals("Medication/ndc-" + recordLine1.nationalDrugCode, medicationEntry.getRequest().getUrl());
-
 	}
 
 	/**
