@@ -30,7 +30,6 @@ node {
 				managedFiles: [[fileId: 'org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig:cms-bluebutton-settings-xml', 
 				variable: 'SETTINGS_PATH']]
 		]) {
-		
 			/*
 			 * Pull the AWS credentials from Jenkins credentials store into the build environment. Some of the ITs need 
 			 * these. For example, DataSetMonitorIT uses them to create and teardown S3 buckets in tests.
@@ -40,10 +39,10 @@ node {
 					accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 				
 				// Run the build.
-				mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-derby-db -U clean deploy scm:tag"
+				mvn "--settings ${env.SETTINGS_PATH} -Dmaven.test.failure.ignore -Prun-its-with-db-on-disk -U clean deploy scm:tag"
 				
 			}
-		}		
+		}
 	
 	stage 'Archive'
 		step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true])
