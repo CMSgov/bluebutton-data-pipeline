@@ -31,12 +31,6 @@ import java.util.stream.Collectors;
  */
 public final class OutpatientClaimGroup {
 
-
-	/**
-	 * @see Column#VERSION
-	 */
-	public int version;
-
 	/**
 	 * @see Column#DML_IND
 	 */
@@ -51,6 +45,11 @@ public final class OutpatientClaimGroup {
 	 * @see Column#CLM_ID
 	 */
 	public String claimId;
+
+	/**
+	 * @see Column#CLM_GRP_ID
+	 */
+	public String claimGrpId;
 
 	/**
 	 * @see Column#NCH_NEAR_LINE_REC_IDENT_CD
@@ -239,14 +238,14 @@ public final class OutpatientClaimGroup {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("OutpatientClaimGroup [version=");
-		builder.append(version);
-		builder.append(", recordAction=");
+		builder.append("OutpatientClaimGroup [recordAction=");
 		builder.append(recordAction);
 		builder.append(", beneficiaryId=");
 		builder.append(beneficiaryId);
 		builder.append(", claimId=");
 		builder.append(claimId);
+		builder.append(", claimGrpId=");
+		builder.append(claimGrpId);
 		builder.append(", nearLineRecordIdCode=");
 		builder.append(nearLineRecordIdCode);
 		builder.append(", claimTypeCode=");
@@ -542,11 +541,6 @@ public final class OutpatientClaimGroup {
 		/**
 		 * Type: (unknown), max chars: (unknown).
 		 */
-		VERSION,
-
-		/**
-		 * Type: (unknown), max chars: (unknown).
-		 */
 		DML_IND,
 
 		/**
@@ -563,6 +557,13 @@ public final class OutpatientClaimGroup {
 		 * CCW Data Dictionary: CLM_ID</a>.
 		 */
 		CLM_ID,
+
+		/**
+		 * Type: <code>CHAR</code>, max chars: 15. See <a href=
+		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_grp_id.txt">
+		 * CCW Data Dictionary: CLM_GRP_ID</a>.
+		 */
+		CLM_GRP_ID,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=

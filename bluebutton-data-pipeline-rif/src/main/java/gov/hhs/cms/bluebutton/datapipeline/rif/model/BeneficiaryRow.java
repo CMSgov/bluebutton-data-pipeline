@@ -18,11 +18,6 @@ import java.util.stream.Collectors;
  */
 public final class BeneficiaryRow {
 	/**
-	 * @see Column#VERSION
-	 */
-	public int version;
-
-	/**
 	 * @see Column#DML_IND
 	 */
 	public RecordAction recordAction;
@@ -119,9 +114,7 @@ public final class BeneficiaryRow {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("BeneficiaryRow [version=");
-		builder.append(version);
-		builder.append(", recordAction=");
+		builder.append("BeneficiaryRow [recordAction=");
 		builder.append(recordAction);
 		builder.append(", beneficiaryId=");
 		builder.append(beneficiaryId);
@@ -167,11 +160,6 @@ public final class BeneficiaryRow {
 	 * the actual data.
 	 */
 	public static enum Column {
-		/**
-		 * Type: (unknown), max chars: (unknown).
-		 */
-		VERSION,
-
 		/**
 		 * Type: (unknown), max chars: (unknown).
 		 */

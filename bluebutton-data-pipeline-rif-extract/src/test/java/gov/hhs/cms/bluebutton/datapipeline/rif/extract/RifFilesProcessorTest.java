@@ -67,7 +67,6 @@ public final class RifFilesProcessorTest {
 		Assert.assertTrue(rifRecordEvent.getRecord() instanceof BeneficiaryRow);
 
 		BeneficiaryRow beneRow = (BeneficiaryRow) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, beneRow.version);
 		Assert.assertEquals(RecordAction.INSERT, beneRow.recordAction);
 		Assert.assertEquals("567834", beneRow.beneficiaryId);
 		Assert.assertEquals("MO", beneRow.stateCode);
@@ -128,9 +127,9 @@ public final class RifFilesProcessorTest {
 		Assert.assertTrue(rifRecordEvent.getRecord() instanceof PartDEventRow);
 
 		PartDEventRow pdeRow = (PartDEventRow) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, pdeRow.version);
 		Assert.assertEquals(RecordAction.INSERT, pdeRow.recordAction);
 		Assert.assertEquals("89", pdeRow.partDEventId);
+		Assert.assertEquals("900", pdeRow.claimGrpId);
 		Assert.assertEquals("567834", pdeRow.beneficiaryId);
 		Assert.assertEquals(LocalDate.of(2015, Month.MAY, 12), pdeRow.prescriptionFillDate);
 		Assert.assertEquals(LocalDate.of(2015, Month.MAY, 27), pdeRow.paymentDate.get());
@@ -212,10 +211,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		CarrierClaimGroup claimGroup = (CarrierClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("9991831999", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('O'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("71", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(1999, 10, 27), claimGroup.dateFrom);
@@ -337,10 +336,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		InpatientClaimGroup claimGroup = (InpatientClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("333333222222", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('V'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("60", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(2016, 01, 15), claimGroup.dateFrom);
@@ -441,10 +440,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		OutpatientClaimGroup claimGroup = (OutpatientClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("1234567890", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('W'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("40", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(2011, 01, 24), claimGroup.dateFrom);
@@ -528,10 +527,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		SNFClaimGroup claimGroup = (SNFClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("777777777", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('V'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("20", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(2013, 12, 01), claimGroup.dateFrom);
@@ -631,10 +630,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		HospiceClaimGroup claimGroup = (HospiceClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("9992223422", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('V'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("50", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(2014, 1, 01), claimGroup.dateFrom);
@@ -711,10 +710,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		HHAClaimGroup claimGroup = (HHAClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("2925555555", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('W'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("10", claimGroup.claimTypeCode);
 		Assert.assertEquals(new Character('2'), claimGroup.claimServiceClassificationTypeCode);
@@ -788,10 +787,10 @@ public final class RifFilesProcessorTest {
 
 		// Verify the claim header.
 		DMEClaimGroup claimGroup = (DMEClaimGroup) rifRecordEvent.getRecord();
-		Assert.assertEquals(RifFilesProcessor.RECORD_FORMAT_VERSION, claimGroup.version);
 		Assert.assertEquals(RecordAction.INSERT, claimGroup.recordAction);
 		Assert.assertEquals("567834", claimGroup.beneficiaryId);
 		Assert.assertEquals("2188888888", claimGroup.claimId);
+		Assert.assertEquals("900", claimGroup.claimGrpId);
 		Assert.assertEquals(new Character('M'), claimGroup.nearLineRecordIdCode);
 		Assert.assertEquals("82", claimGroup.claimTypeCode);
 		Assert.assertEquals(LocalDate.of(2014, 02, 03), claimGroup.dateFrom);

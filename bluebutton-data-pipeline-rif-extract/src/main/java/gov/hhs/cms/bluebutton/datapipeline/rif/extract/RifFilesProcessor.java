@@ -33,7 +33,6 @@ import gov.hhs.cms.bluebutton.datapipeline.rif.extract.CsvRecordGroupingIterator
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.CsvRecordGroupingIterator.CsvRecordGrouper;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.InvalidRifValueException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.UnsupportedRifFileTypeException;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.UnsupportedRifVersionException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.BeneficiaryRow;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.CarrierClaimGroup;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.CarrierClaimGroup.CarrierClaimLine;
@@ -66,11 +65,6 @@ import gov.hhs.cms.bluebutton.datapipeline.rif.parse.RifParsingUtils;
  * Contains services responsible for handling new RIF files.
  */
 public final class RifFilesProcessor {
-	/**
-	 * The {@link BeneficiaryRow#version}, {@link CarrierClaimGroup#version},
-	 * etc. value that is currently supported.
-	 */
-	public static final int RECORD_FORMAT_VERSION = 5;
 
 	private static DateTimeFormatter formatter = new DateTimeFormatterBuilder().parseCaseInsensitive()
 			.appendPattern("dd-MMM-yyyy").toFormatter();
@@ -279,7 +273,6 @@ public final class RifFilesProcessor {
 			LOGGER.trace(csvRecord.toString());
 
 		BeneficiaryRow beneficiaryRow = new BeneficiaryRow();
-		beneficiaryRow.version = Integer.parseInt(csvRecord.get(BeneficiaryRow.Column.VERSION));
 		beneficiaryRow.recordAction = RecordAction.match(csvRecord.get(BeneficiaryRow.Column.DML_IND));
 		beneficiaryRow.beneficiaryId = csvRecord.get(BeneficiaryRow.Column.BENE_ID);
 		beneficiaryRow.stateCode = csvRecord.get(BeneficiaryRow.Column.STATE_CODE);
@@ -304,10 +297,6 @@ public final class RifFilesProcessor {
 		beneficiaryRow.nameGiven = csvRecord.get(BeneficiaryRow.Column.BENE_GVN_NAME);
 		beneficiaryRow.nameMiddleInitial = parseOptCharacter(csvRecord.get(BeneficiaryRow.Column.BENE_MDL_NAME));
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != beneficiaryRow.version)
-			throw new UnsupportedRifVersionException(beneficiaryRow.version);
-
 		return beneficiaryRow;
 	}
 
@@ -327,13 +316,9 @@ public final class RifFilesProcessor {
 			LOGGER.trace(csvRecord.toString());
 
 		PartDEventRow pdeRow = new PartDEventRow();
-		pdeRow.version = Integer.parseInt(csvRecord.get(PartDEventRow.Column.VERSION));
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != pdeRow.version)
-			throw new UnsupportedRifVersionException(pdeRow.version);
-
 		pdeRow.recordAction = RecordAction.match(csvRecord.get(PartDEventRow.Column.DML_IND));
 		pdeRow.partDEventId = csvRecord.get(PartDEventRow.Column.PDE_ID);
+		pdeRow.claimGrpId = csvRecord.get(PartDEventRow.Column.CLM_GRP_ID);
 		pdeRow.beneficiaryId = csvRecord.get(PartDEventRow.Column.BENE_ID);
 		pdeRow.prescriptionFillDate = LocalDate.parse(csvRecord.get(PartDEventRow.Column.SRVC_DT), RIF_DATE_FORMATTER);
 		pdeRow.paymentDate = parseOptDate(csvRecord.get(PartDEventRow.Column.PD_DT));
@@ -390,10 +375,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(InpatientClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(InpatientClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(InpatientClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(InpatientClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(InpatientClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(InpatientClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(InpatientClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -547,10 +532,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-
 		return claimGroup;
 	}
 
@@ -565,10 +546,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(OutpatientClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(OutpatientClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(OutpatientClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(OutpatientClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(OutpatientClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(OutpatientClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(OutpatientClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -687,10 +668,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-
 		return claimGroup;
 	}
 
@@ -713,10 +690,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(CarrierClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(CarrierClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(CarrierClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(CarrierClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(CarrierClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(CarrierClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(CarrierClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -831,10 +808,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 	
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-	
 		return claimGroup;
 	}
 
@@ -849,10 +822,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(SNFClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(SNFClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(SNFClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(SNFClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(SNFClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(SNFClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(SNFClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -961,10 +934,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-
 		return claimGroup;
 	}
 
@@ -979,10 +948,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(HospiceClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(HospiceClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(HospiceClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(HospiceClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(HospiceClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(HospiceClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(HospiceClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -1059,10 +1028,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-
 		return claimGroup;
 	}
 
@@ -1077,10 +1042,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(HHAClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(HHAClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(HHAClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(HHAClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(HHAClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(HHAClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(HHAClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -1148,10 +1113,6 @@ public final class RifFilesProcessor {
 			claimGroup.lines.add(claimLine);
 		}
 
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
-
 		return claimGroup;
 	}
 
@@ -1174,10 +1135,10 @@ public final class RifFilesProcessor {
 		/*
 		 * Parse the claim header fields.
 		 */
-		claimGroup.version = parseInt(firstClaimLine.get(DMEClaimGroup.Column.VERSION));
 		claimGroup.recordAction = RecordAction.match(firstClaimLine.get(DMEClaimGroup.Column.DML_IND));
 		claimGroup.beneficiaryId = firstClaimLine.get(DMEClaimGroup.Column.BENE_ID);
 		claimGroup.claimId = firstClaimLine.get(DMEClaimGroup.Column.CLM_ID);
+		claimGroup.claimGrpId = firstClaimLine.get(DMEClaimGroup.Column.CLM_GRP_ID);
 		claimGroup.nearLineRecordIdCode = parseCharacter(
 				firstClaimLine.get(DMEClaimGroup.Column.NCH_NEAR_LINE_REC_IDENT_CD));
 		claimGroup.claimTypeCode = firstClaimLine.get(DMEClaimGroup.Column.NCH_CLM_TYPE_CD);
@@ -1277,10 +1238,6 @@ public final class RifFilesProcessor {
 
 			claimGroup.lines.add(claimLine);
 		}
-
-		// Sanity check:
-		if (RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 
 		return claimGroup;
 	}

@@ -63,11 +63,9 @@ import org.slf4j.LoggerFactory;
 import com.justdavis.karl.misc.exceptions.BadCodeMonkeyException;
 
 import gov.hhs.cms.bluebutton.datapipeline.fhir.SharedDataManager;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.RifFilesProcessor;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.InvalidRifValueException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.UnsupportedRifFileTypeException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.UnsupportedRifRecordActionException;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.UnsupportedRifVersionException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.BeneficiaryRow;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.CarrierClaimGroup;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.CarrierClaimGroup.CarrierClaimLine;
@@ -213,6 +211,8 @@ public final class DataTransformer {
 	static final String CODING_SYSTEM_CCW_BENE_ID = "CCW.BENE_ID";
 
 	public static final String CODING_SYSTEM_CCW_CLAIM_ID = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_id.txt";
+
+	public static final String CODING_SYSTEM_CCW_CLAIM_GRP_ID = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_grp_id.txt";
 
 	public static final String CODING_SYSTEM_CCW_CLAIM_TYPE = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_type.txt";
 
@@ -647,8 +647,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("Beneficiary RIF record is null");
 		BeneficiaryRow record = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != record.version)
-			throw new UnsupportedRifVersionException(record.version);
 		if (record.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(record.recordAction);
@@ -768,8 +766,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("PDE RIF record is null");
 		PartDEventRow record = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != record.version)
-			throw new UnsupportedRifVersionException(record.version);
 		if (record.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(record.recordAction);
@@ -780,6 +776,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/partD-claimid-" + record.partDEventId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_PDE_ID).setValue(record.partDEventId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(record.claimGrpId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_RX_SRVC_RFRNC_NUM)
 				.setValue(String.valueOf(record.prescriptionReferenceNumber));
 
@@ -1027,8 +1024,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("Carrier RIF record is null");
 		CarrierClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -1037,8 +1032,10 @@ public final class DataTransformer {
 		bundle.setType(BundleType.TRANSACTION);
 
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+
 		eob.setId("ExplanationOfBenefit/carrier-claimid-" + claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setStatus(ExplanationOfBenefitStatus.ACTIVE);
@@ -1352,8 +1349,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("Inpatient RIF record is null");
 		InpatientClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -1364,6 +1359,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/inpatient-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 
@@ -1737,8 +1733,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("Outpatient RIF record is null");
 		OutpatientClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -1749,6 +1743,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/outpatient-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2068,8 +2063,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("SNF RIF record is null");
 		SNFClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -2080,6 +2073,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/snf-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2430,8 +2424,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("Hospice RIF record is null");
 		HospiceClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -2442,6 +2434,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/hospice-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2647,8 +2640,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("HHA RIF record is null");
 		HHAClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(claimGroup.recordAction);
@@ -2659,6 +2650,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/hha-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2857,8 +2849,6 @@ public final class DataTransformer {
 		if (rifRecordEvent == null)
 			throw new InvalidRifFileFormatException("DME RIF record is null");
 		DMEClaimGroup claimGroup = rifRecordEvent.getRecord();
-		if (RifFilesProcessor.RECORD_FORMAT_VERSION != claimGroup.version)
-			throw new UnsupportedRifVersionException(claimGroup.version);
 		if (claimGroup.recordAction != RecordAction.INSERT)
 			// Will need refactoring to support other ops.
 			throw new UnsupportedRifRecordActionException(
@@ -2870,6 +2860,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/dme-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setStatus(ExplanationOfBenefitStatus.ACTIVE);
