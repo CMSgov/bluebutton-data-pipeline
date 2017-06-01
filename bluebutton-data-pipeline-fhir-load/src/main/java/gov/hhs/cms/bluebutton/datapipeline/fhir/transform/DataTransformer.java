@@ -212,7 +212,7 @@ public final class DataTransformer {
 
 	public static final String CODING_SYSTEM_CCW_CLAIM_ID = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_id.txt";
 
-	public static final String CODING_SYSTEM_CCW_CLAIM_GRP_ID = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_grp_id.txt";
+	public static final String CODING_SYSTEM_CCW_CLAIM_GRP_ID = "http://bluebutton.cms.hhs.gov/identifier#claimGroup";
 
 	public static final String CODING_SYSTEM_CCW_CLAIM_TYPE = "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_type.txt";
 
@@ -776,7 +776,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/partD-claimid-" + record.partDEventId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_PDE_ID).setValue(record.partDEventId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(record.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(record.claimGroupId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_RX_SRVC_RFRNC_NUM)
 				.setValue(String.valueOf(record.prescriptionReferenceNumber));
 
@@ -1035,7 +1035,7 @@ public final class DataTransformer {
 
 		eob.setId("ExplanationOfBenefit/carrier-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setStatus(ExplanationOfBenefitStatus.ACTIVE);
@@ -1359,7 +1359,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/inpatient-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 
@@ -1743,7 +1743,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/outpatient-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2073,7 +2073,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/snf-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2434,7 +2434,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/hospice-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2650,7 +2650,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/hha-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_A));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setType(createCodeableConcept(CODING_SYSTEM_CCW_CLAIM_TYPE, claimGroup.claimTypeCode));
@@ -2860,7 +2860,7 @@ public final class DataTransformer {
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		eob.setId("ExplanationOfBenefit/dme-claimid-" + claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGrpId);
+		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
 		eob.setStatus(ExplanationOfBenefitStatus.ACTIVE);

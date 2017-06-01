@@ -49,7 +49,7 @@ public final class OutpatientClaimGroup {
 	/**
 	 * @see Column#CLM_GRP_ID
 	 */
-	public String claimGrpId;
+	public String claimGroupId;
 
 	/**
 	 * @see Column#NCH_NEAR_LINE_REC_IDENT_CD
@@ -244,8 +244,8 @@ public final class OutpatientClaimGroup {
 		builder.append(beneficiaryId);
 		builder.append(", claimId=");
 		builder.append(claimId);
-		builder.append(", claimGrpId=");
-		builder.append(claimGrpId);
+		builder.append(", claimGroupId=");
+		builder.append(claimGroupId);
 		builder.append(", nearLineRecordIdCode=");
 		builder.append(nearLineRecordIdCode);
 		builder.append(", claimTypeCode=");
@@ -559,9 +559,7 @@ public final class OutpatientClaimGroup {
 		CLM_ID,
 
 		/**
-		 * Type: <code>CHAR</code>, max chars: 15. See <a href=
-		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/clm_grp_id.txt">
-		 * CCW Data Dictionary: CLM_GRP_ID</a>.
+		 * Type: <code>CHAR</code>, max chars: 15.
 		 */
 		CLM_GRP_ID,
 

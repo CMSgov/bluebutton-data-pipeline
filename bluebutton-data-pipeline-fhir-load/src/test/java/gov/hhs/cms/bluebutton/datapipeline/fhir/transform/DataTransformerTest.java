@@ -238,7 +238,7 @@ public final class DataTransformerTest {
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_PDE_ID, pdeRecord.partDEventId,
 				eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, pdeRecord.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, pdeRecord.claimGroupId,
 				eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_FHIR_CLAIM_TYPE, "pharmacy", eob.getType());
 		Assert.assertEquals("Patient/bene-" + pdeRecord.beneficiaryId, eob.getPatient().getReference());
@@ -439,7 +439,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
 		assertExtensionCodingEquals(eob.getType(), DataTransformer.CODING_SYSTEM_CCW_RECORD_ID_CD,
@@ -637,7 +637,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		Assert.assertEquals("active", eob.getStatus().toCode());
 		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
@@ -834,7 +834,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		Assert.assertEquals("active", eob.getStatus().toCode());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
@@ -1003,7 +1003,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 
 		Assert.assertEquals("active", eob.getStatus().toCode());
@@ -1190,7 +1190,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
@@ -1324,7 +1324,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId,
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
@@ -1449,7 +1449,7 @@ public final class DataTransformerTest {
 		assertOptionalNotPresent(eob);
 
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
-		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGrpId, eob.getIdentifier());
+		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId, eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
 		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
