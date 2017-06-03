@@ -1804,8 +1804,6 @@ public final class DataTransformer {
 
 		ExplanationOfBenefit eob = new ExplanationOfBenefit();
 		Identifier eobId = eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
-		eob.setId("ExplanationOfBenefit/outpatient-claimid-" + claimGroup.claimId);
-		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_ID).setValue(claimGroup.claimId);
 		eob.addIdentifier().setSystem(CODING_SYSTEM_CCW_CLAIM_GRP_ID).setValue(claimGroup.claimGroupId);
 		eob.getInsurance().setCoverage(referenceCoverage(claimGroup.beneficiaryId, COVERAGE_PLAN_PART_B));
 		eob.setPatient(referencePatient(claimGroup.beneficiaryId));
