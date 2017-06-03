@@ -110,7 +110,6 @@ public final class BeneficiaryRow {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -143,7 +142,7 @@ public final class BeneficiaryRow {
 		builder.append(", partBTerminationCode=");
 		builder.append(partBTerminationCode);
 		builder.append(", hicn=");
-		builder.append(hicn);
+		builder.append("***");
 		builder.append(", nameSurname=");
 		builder.append(nameSurname);
 		builder.append(", nameGiven=");

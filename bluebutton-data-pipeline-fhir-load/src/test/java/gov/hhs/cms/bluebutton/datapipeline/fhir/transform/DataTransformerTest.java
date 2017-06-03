@@ -3,20 +3,24 @@ package gov.hhs.cms.bluebutton.datapipeline.fhir.transform;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
-import org.hl7.fhir.dstu3.model.Bundle.HTTPVerb;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.Coverage;
@@ -39,11 +43,16 @@ import org.hl7.fhir.dstu3.model.TemporalPrecisionEnum;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.justdavis.karl.misc.exceptions.BadCodeMonkeyException;
 
 import ca.uhn.fhir.context.FhirContext;
+import gov.hhs.cms.bluebutton.datapipeline.fhir.LoadAppOptions;
+import gov.hhs.cms.bluebutton.datapipeline.fhir.load.FhirTestUtilities;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.RifFilesProcessor;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.BeneficiaryRow;
 import gov.hhs.cms.bluebutton.datapipeline.rif.model.CarrierClaimGroup;
@@ -74,6 +83,7 @@ import gov.hhs.cms.bluebutton.datapipeline.sampledata.StaticRifResource;
  * Unit tests for {@link DataTransformer}.
  */
 public final class DataTransformerTest {
+	public static final Logger LOGGER = LoggerFactory.getLogger(DataTransformerTest.class);
 
 	/**
 	 * Verifies that {@link DataTransformer} works correctly when passed an
@@ -81,7 +91,7 @@ public final class DataTransformerTest {
 	 */
 	@Test
 	public void transformEmptyRifStream() {
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 
 		Stream<RifRecordEvent<?>> source = new ArrayList<RifRecordEvent<?>>().stream();
 		Stream<TransformedBundle> result = transformer.transform(source);
@@ -105,7 +115,7 @@ public final class DataTransformerTest {
 		// Create Mock
 		Stream source = Arrays.asList(rifRecordEvent).stream();
 
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -123,8 +133,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(4, beneBundle.getEntry().size());
 		BundleEntryComponent beneEntry = beneBundle.getEntry().stream().filter(r -> r.getResource() instanceof Patient)
 				.findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, beneEntry.getRequest().getMethod());
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, beneEntry.getRequest().getUrl());
 		Patient bene = (Patient) beneEntry.getResource();
 
 		FhirContext ctx = FhirContext.forDstu3();
@@ -133,7 +141,6 @@ public final class DataTransformerTest {
 
 		Assert.assertEquals(false, encoded.contains("Optional"));
 
-		Assert.assertEquals(bene.getId(), "Patient/bene-" + record.beneficiaryId);
 		Assert.assertEquals(1, bene.getAddress().size());
 		Assert.assertEquals(record.stateCode, bene.getAddress().get(0).getState());
 		Assert.assertEquals(record.countyCode, bene.getAddress().get(0).getDistrict());
@@ -151,9 +158,9 @@ public final class DataTransformerTest {
 				.filter(r -> r.getResource() instanceof Coverage).toArray(BundleEntryComponent[]::new);
 
 		Coverage partA = (Coverage) coverageEntry[0].getResource();
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, partA.getGroup().getSubGroup());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, partA.getGrouping().getSubGroup());
 		Assert.assertEquals(CoverageStatus.ACTIVE, partA.getStatus());
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_A, partA.getGroup().getSubPlan());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_A, partA.getGrouping().getSubPlan());
 
 		assertExtensionCodingEquals(partA, DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD,
 				DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD, record.medicareEnrollmentStatusCode.get());
@@ -171,15 +178,15 @@ public final class DataTransformerTest {
 
 		Coverage partB = (Coverage) coverageEntry[1].getResource();
 		Assert.assertEquals(DataTransformer.COVERAGE_PLAN,
-				partB.getGroup().getSubGroup());
+				partB.getGrouping().getSubGroup());
 		Assert.assertEquals(CoverageStatus.ACTIVE, partB.getStatus());
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_B, partB.getGroup().getSubPlan());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_B, partB.getGrouping().getSubPlan());
 		assertExtensionCodingEquals(partB, DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD,
 				DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD, record.medicareEnrollmentStatusCode.get());
 
 		Coverage partD = (Coverage) coverageEntry[2].getResource();
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, partD.getGroup().getSubGroup());
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_D, partD.getGroup().getSubPlan());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, partD.getGrouping().getSubGroup());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_D, partD.getGrouping().getSubPlan());
 		assertExtensionCodingEquals(partB, DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD,
 				DataTransformer.CODING_SYSTEM_CCW_BENE_MDCR_STATUS_CD, record.medicareEnrollmentStatusCode.get());
 	}
@@ -199,11 +206,83 @@ public final class DataTransformerTest {
 
 		// Just ensure that the transform succeeds without errors.
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
 		Assert.assertEquals(1, resultList.size());
+	}
+
+	/**
+	 * Verify that the {@link DataTransformer#computeHicnHash(String)} algorithm
+	 * doesn't produce any collisions. Such collisions would result in
+	 * beneficiaries being able to see other beneficiaries' data. That'd be bad.
+	 */
+	@Test
+	@Ignore("Won't ever complete. Needs too much RAM.")
+	public void checkForHicnHashCollisions() {
+		/*
+		 * Actual HICNs follow a format, but it's poorly documented so for our
+		 * purposes here we'll simplify it to the following: "123456789X". The
+		 * first nine digits are social security numbers, which are followed by
+		 * a one-character suffix of 'A, 'B', 'C', 'D', or 'E'.
+		 */
+
+		/*
+		 * If we don't limit the SSN search space, this test will run more-or
+		 * less forever. So instead, we limit our search to a random 60M SSNs,
+		 * which has the added benefit of allowing this test to estimate the
+		 * time that HICN hashing will add to an initial load.
+		 */
+		// FIXME we can get through 7M with a 12GB heap before mem pressure
+		int maxValidSsn = 899999999;
+		int startSsn = new Random().nextInt(maxValidSsn - 6000000 + 1);
+
+		LoadAppOptions options = FhirTestUtilities.getLoadOptions();
+		SecureRandom rng = new SecureRandom();
+		byte[] randomPepper = new byte[128 / 8]; // 128 bits
+		rng.nextBytes(randomPepper);
+		options = new LoadAppOptions(1000, randomPepper, options.getFhirServer(), options.getKeyStorePath(),
+				options.getKeyStorePassword(), options.getTrustStorePath(), options.getTrustStorePassword(),
+				options.getLoaderThreads());
+
+		Map<String, String> knownHashes = new HashMap<>();
+		for (int ssn = startSsn; ssn <= maxValidSsn; ssn++) {
+			for (char suffix = 'A'; suffix <= 'E'; suffix++) {
+				// (This will left-pad the SSNs with zeroes.)
+				String hicn = String.format("%09d%c", ssn, suffix);
+
+				String hash = DataTransformer.computeHicnHash(options, hicn);
+				Assert.assertFalse(String.format("Hash collision for HICN hash of '%s': '%s and '%s'.", hash, hicn,
+						knownHashes.get(hash)), knownHashes.containsKey(hash));
+				knownHashes.put(hash, hicn);
+			}
+
+			if ((ssn - startSsn) % 10000 == 0)
+				LOGGER.info("Completed SSN {}", (ssn - startSsn));
+		}
+	}
+
+	/**
+	 * Runs a couple of fake HICNs through
+	 * {@link DataTransformer#computeHicnHash(LoadAppOptions, String)} to verify
+	 * that the expected result is produced.
+	 */
+	@Test
+	public void verifyHicnHashOutput() {
+		LoadAppOptions options = FhirTestUtilities.getLoadOptions();
+		options = new LoadAppOptions(1000, "nottherealpepper".getBytes(StandardCharsets.UTF_8), options.getFhirServer(),
+				options.getKeyStorePath(), options.getKeyStorePassword(), options.getTrustStorePath(),
+				options.getTrustStorePassword(), options.getLoaderThreads());
+
+		/*
+		 * These are the two samples from `dev/design-decisions-readme.md` that
+		 * the frontend and backend both have tests to verify the result of.
+		 */
+		Assert.assertEquals("d95a418b0942c7910fb1d0e84f900fe12e5a7fd74f312fa10730cc0fda230e9a",
+				DataTransformer.computeHicnHash(options, "123456789A"));
+		Assert.assertEquals("6357f16ebd305103cf9f2864c56435ad0de5e50f73631159772f4a4fcdfe39a5",
+				DataTransformer.computeHicnHash(options, "987654321E"));
 	}
 
 	/**
@@ -232,7 +311,6 @@ public final class DataTransformerTest {
 		BundleEntryComponent eobEntry = pdeBundle.getEntry().stream()
 				.filter(r -> r.getResource() instanceof ExplanationOfBenefit).findAny().get();
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 
 		assertOptionalNotPresent(eob);
 
@@ -241,7 +319,8 @@ public final class DataTransformerTest {
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, pdeRecord.claimGroupId,
 				eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_FHIR_CLAIM_TYPE, "pharmacy", eob.getType());
-		Assert.assertEquals("Patient/bene-" + pdeRecord.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(pdeRecord.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		Assert.assertEquals(Date.valueOf(pdeRecord.paymentDate.get()), eob.getPayment().getDate());
 
 		Assert.assertEquals("01", pdeRecord.serviceProviderIdQualiferCode);
@@ -285,8 +364,8 @@ public final class DataTransformerTest {
 				coverage.getIdentifier());
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_PDE_PLAN_BENEFIT_PACKAGE_ID,
 				pdeRecord.planBenefitPackageId, coverage.getIdentifier());
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, coverage.getGroup().getPlan());
-		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_D, coverage.getGroup().getSubPlan());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN, coverage.getGrouping().getPlan());
+		Assert.assertEquals(DataTransformer.COVERAGE_PLAN_PART_D, coverage.getGrouping().getSubPlan());
 
 	}
 
@@ -415,7 +494,7 @@ public final class DataTransformerTest {
 		
 		// Creating Mock	
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -433,7 +512,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -441,7 +519,8 @@ public final class DataTransformerTest {
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertExtensionCodingEquals(eob.getType(), DataTransformer.CODING_SYSTEM_CCW_RECORD_ID_CD,
 				DataTransformer.CODING_SYSTEM_CCW_RECORD_ID_CD, record.nearLineRecordIdCode.toString());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
@@ -456,9 +535,10 @@ public final class DataTransformerTest {
 		Assert.assertEquals(record.paymentAmount, eob.getPayment().getAmount().getValue());
 
 		ReferralRequest referral = (ReferralRequest) eob.getReferral().getResource();
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, referral.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				referral.getSubject().getReference());
 		assertReferenceIdentifierEquals(DataTransformer.CODING_SYSTEM_NPI_US, record.referringPhysicianNpi.get(),
-				referral.getRequester());
+				referral.getRequester().getAgent());
 		Assert.assertEquals(1, referral.getRecipient().size());
 		assertReferenceIdentifierEquals(DataTransformer.CODING_SYSTEM_NPI_US, record.referringPhysicianNpi.get(),
 				referral.getRecipientFirstRep());
@@ -612,7 +692,7 @@ public final class DataTransformerTest {
 
 		// Create Mock
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -631,7 +711,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -640,7 +719,8 @@ public final class DataTransformerTest {
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
 		Assert.assertEquals("active", eob.getStatus().toCode());
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
 		assertDateEquals(record.dateThrough, eob.getBillablePeriod().getEndElement());
@@ -808,7 +888,7 @@ public final class DataTransformerTest {
 		OutpatientClaimLine recordLine1 = record.lines.get(0);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -828,7 +908,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -839,7 +918,8 @@ public final class DataTransformerTest {
 		Assert.assertEquals("active", eob.getStatus().toCode());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
 		assertDateEquals(record.dateThrough, eob.getBillablePeriod().getEndElement());
 		assertExtensionCodingEquals(eob.getBillablePeriod(), DataTransformer.CODING_SYSTEM_QUERY_CD,
@@ -979,7 +1059,7 @@ public final class DataTransformerTest {
 		SNFClaimLine recordLine1 = record.lines.get(0);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -997,7 +1077,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -1009,7 +1088,8 @@ public final class DataTransformerTest {
 		Assert.assertEquals("active", eob.getStatus().toCode());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
 		assertDateEquals(record.dateThrough, eob.getBillablePeriod().getEndElement());
 		assertExtensionCodingEquals(eob.getBillablePeriod(), DataTransformer.CODING_SYSTEM_QUERY_CD,
@@ -1166,7 +1246,7 @@ public final class DataTransformerTest {
 		HospiceClaimLine recordLine1 = record.lines.get(0);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -1184,7 +1264,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -1194,7 +1273,8 @@ public final class DataTransformerTest {
 				eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
 		assertDateEquals(record.dateThrough, eob.getBillablePeriod().getEndElement());
 		assertReferenceIdentifierEquals(DataTransformer.CODING_SYSTEM_PROVIDER_NUMBER, record.providerNumber,
@@ -1300,7 +1380,7 @@ public final class DataTransformerTest {
 		HHAClaimLine recordLine1 = record.lines.get(0);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -1318,7 +1398,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -1326,7 +1405,8 @@ public final class DataTransformerTest {
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_ID, record.claimId, eob.getIdentifier());
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId,
 				eob.getIdentifier());
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
 		assertDateEquals(record.dateThrough, eob.getBillablePeriod().getEndElement());
 
@@ -1425,7 +1505,7 @@ public final class DataTransformerTest {
 		DMEClaimLine recordLine1 = record.lines.get(0);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		Assert.assertNotNull(resultStream);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
@@ -1443,7 +1523,6 @@ public final class DataTransformerTest {
 		Assert.assertEquals(1, claimBundle.getEntry().size());
 		BundleEntryComponent eobEntry = claimBundle.getEntry().stream()
 				.filter(e -> e.getResource() instanceof ExplanationOfBenefit).findAny().get();
-		Assert.assertEquals(HTTPVerb.PUT, eobEntry.getRequest().getMethod());
 		ExplanationOfBenefit eob = (ExplanationOfBenefit) eobEntry.getResource();
 
 		assertOptionalNotPresent(eob);
@@ -1452,7 +1531,8 @@ public final class DataTransformerTest {
 		assertIdentifierExists(DataTransformer.CODING_SYSTEM_CCW_CLAIM_GRP_ID, record.claimGroupId, eob.getIdentifier());
 		assertHasCoding(DataTransformer.CODING_SYSTEM_CCW_CLAIM_TYPE, record.claimTypeCode, eob.getType());
 
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, eob.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				eob.getPatient().getReference());
 		assertExtensionCodingEquals(eob.getType(), DataTransformer.CODING_SYSTEM_CCW_RECORD_ID_CD,
 				DataTransformer.CODING_SYSTEM_CCW_RECORD_ID_CD, record.nearLineRecordIdCode.toString());
 		assertDateEquals(record.dateFrom, eob.getBillablePeriod().getStartElement());
@@ -1475,12 +1555,10 @@ public final class DataTransformerTest {
 				DataTransformer.CODING_SYSTEM_CCW_CARR_CLINICAL_TRIAL_NUMBER, record.clinicalTrialNumber.get());
 		
 		ReferralRequest referral = (ReferralRequest) eob.getReferral().getResource();
-		Assert.assertEquals("Patient/bene-" + record.beneficiaryId, referral.getPatient().getReference());
+		Assert.assertEquals(DataTransformer.referencePatient(record.beneficiaryId).getReference(),
+				referral.getSubject().getReference());
 		assertReferenceIdentifierEquals(DataTransformer.CODING_SYSTEM_NPI_US, record.referringPhysicianNpi.get(),
-				referral.getRequester());
-		Assert.assertEquals(1, referral.getRecipient().size());
-		assertReferenceIdentifierEquals(DataTransformer.CODING_SYSTEM_NPI_US, record.referringPhysicianNpi.get(),
-				referral.getRecipientFirstRep());
+				referral.getRequester().getAgent());
 
 		assertExtensionCodingEquals(eob, DataTransformer.CODING_SYSTEM_CCW_PROVIDER_ASSIGNMENT,
 				DataTransformer.CODING_SYSTEM_CCW_PROVIDER_ASSIGNMENT, "A");
@@ -1815,7 +1893,7 @@ public final class DataTransformerTest {
 				.findFirst();
 		Assert.assertTrue(benefitComponent.isPresent());
 		try {
-			Assert.assertEquals(expectedAmount, benefitComponent.get().getBenefitMoney().getValue());
+			Assert.assertEquals(expectedAmount, benefitComponent.get().getAllowedMoney().getValue());
 		} catch (FHIRException e) {
 			throw new BadCodeMonkeyException(e);
 		}
@@ -1841,7 +1919,7 @@ public final class DataTransformerTest {
 				.isCodeInConcept(a.getType(), expectedFinancialTypeSystem, expectedFinancialTypeCode)).findFirst();
 		Assert.assertTrue(benefitComponent.isPresent());
 		try {
-			Assert.assertEquals(expectedAmount, benefitComponent.get().getBenefitUnsignedIntType().getValue());
+			Assert.assertEquals(expectedAmount, benefitComponent.get().getAllowedUnsignedIntType().getValue());
 		} catch (FHIRException e) {
 			throw new BadCodeMonkeyException(e);
 		}
@@ -1867,7 +1945,7 @@ public final class DataTransformerTest {
 				.isCodeInConcept(a.getType(), expectedFinancialTypeSystem, expectedFinancialTypeCode)).findFirst();
 		Assert.assertTrue(benefitComponent.isPresent());
 		try {
-			Assert.assertEquals(expectedAmount, benefitComponent.get().getBenefitUsedUnsignedIntType().getValue());
+			Assert.assertEquals(expectedAmount, benefitComponent.get().getUsedUnsignedIntType().getValue());
 		} catch (FHIRException e) {
 			throw new BadCodeMonkeyException(e);
 		}
@@ -2033,7 +2111,7 @@ public final class DataTransformerTest {
 		RifRecordEvent rifRecordEvent = new RifRecordEvent(filesEvent, file, record);
 
 		Stream source = Arrays.asList(rifRecordEvent).stream();
-		DataTransformer transformer = new DataTransformer();
+		DataTransformer transformer = new DataTransformer(FhirTestUtilities.getLoadOptions());
 		Stream<TransformedBundle> resultStream = transformer.transform(source);
 		List<TransformedBundle> resultList = resultStream.collect(Collectors.toList());
 
