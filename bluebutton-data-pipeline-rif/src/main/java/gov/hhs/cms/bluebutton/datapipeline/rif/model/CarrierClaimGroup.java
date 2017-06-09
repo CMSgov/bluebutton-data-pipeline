@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
  * <p>
  * The RIF file layout used here is specific to the Blue Button API's ETL
  * process. The layouts of these files is detailed in the
- * <code>bluebutton-data-pipeline-rif/dev/rif-record-layout.xlsx</code> file.
- * The columns contained in the files are largely similar to those detailed in
+ * <code>bluebutton-data-pipeline-rif/dev/rif-layout-and-fhir-mapping.xlsx</code>
+ * file. The columns contained in the files are largely similar to those
+ * detailed in
  * <a href="https://www.ccwdata.org/web/guest/data-dictionaries">CCW: Data
  * Dictionaries</a>.
  * </p>
@@ -343,12 +344,12 @@ public final class CarrierClaimGroup {
 		/**
 		 * @see Column#LINE_1ST_EXPNS_DT
 		 */
-		public LocalDate firstExpenseDate;
+		public Optional<LocalDate> firstExpenseDate;
 
 		/**
 		 * @see Column#LINE_LAST_EXPNS_DT
 		 */
-		public LocalDate lastExpenseDate;
+		public Optional<LocalDate> lastExpenseDate;
 
 		/**
 		 * @see Column#HCPCS_CD
@@ -1072,14 +1073,16 @@ public final class CarrierClaimGroup {
 		CARR_LINE_PRCNG_LCLTY_CD,
 
 		/**
-		 * Type: <code>DATE</code>, max chars: 8. See <a href=
+		 * Type: <code>DATE</code>, max chars: 8 <code>Optional</code>. See
+		 * <a href=
 		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/expnsdt1.txt">
 		 * CCW Data Dictionary: EXPNSDT1</a>.
 		 */
 		LINE_1ST_EXPNS_DT,
 
 		/**
-		 * Type: <code>DATE</code>, max chars: 8. See <a href=
+		 * Type: <code>DATE</code>, max chars: 8 <code>Optional</code>. See
+		 * <a href=
 		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/expnsdt2.txt">
 		 * CCW Data Dictionary: EXPNSDT2</a>.
 		 */

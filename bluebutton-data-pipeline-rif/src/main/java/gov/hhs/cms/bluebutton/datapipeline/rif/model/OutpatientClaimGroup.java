@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
  * <p>
  * The RIF file layout used here is specific to the Blue Button API's ETL
  * process. The layouts of these files is detailed in the
- * <code>bluebutton-data-pipeline-rif/dev/rif-record-layout.xlsx</code> file.
- * The columns contained in the files are largely similar to those detailed in
+ * <code>bluebutton-data-pipeline-rif/dev/rif-layout-and-fhir-mapping.xlsx</code>
+ * file. The columns contained in the files are largely similar to those
+ * detailed in
  * <a href="https://www.ccwdata.org/web/guest/data-dictionaries">CCW: Data
  * Dictionaries</a>.
  * </p>
@@ -983,9 +984,9 @@ public final class OutpatientClaimGroup {
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=
 		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_dgns_vrsn_cd15.txt">
-		 * CCW Data Dictionary: ICD_DGNS_VRNS_CD15</a>.
+		 * CCW Data Dictionary: ICD_DGNS_VRSN_CD15</a>.
 		 */
-		ICD_DGNS_VRNS_CD15,
+		ICD_DGNS_VRSN_CD15,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 19. See <a href=
@@ -997,9 +998,9 @@ public final class OutpatientClaimGroup {
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=
 		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_dgns_vrsn_cd16.txt">
-		 * CCW Data Dictionary: ICD_DGNS_VRNS_CD16</a>.
+		 * CCW Data Dictionary: ICD_DGNS_VRSN_CD16</a>.
 		 */
-		ICD_DGNS_VRNS_CD16,
+		ICD_DGNS_VRSN_CD16,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 19. See <a href=
@@ -1631,17 +1632,17 @@ public final class OutpatientClaimGroup {
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 7. See <a href=
-		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_c15.txt">
-		 * CCW Data Dictionary: ICD_PRCDR_C15</a>.
+		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_cd15.txt">
+		 * CCW Data Dictionary: ICD_PRCDR_CD15</a>.
 		 */
-		ICD_PRCDR_C15,
+		ICD_PRCDR_CD15,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=
-		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_vrsn_c15.txt">
-		 * CCW Data Dictionary: ICD_PRCDR_VRSN_C15</a>.
+		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_vrsn_cd15.txt">
+		 * CCW Data Dictionary: ICD_PRCDR_VRSN_CD15</a>.
 		 */
-		ICD_PRCDR_VRSN_C15,
+		ICD_PRCDR_VRSN_CD15,
 
 		/**
 		 * Type: <code>DATE</code>, max chars: 8. See <a href=
@@ -1652,17 +1653,17 @@ public final class OutpatientClaimGroup {
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 7. See <a href=
-		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_c16.txt">
-		 * CCW Data Dictionary: ICD_PRCDR_C16</a>.
+		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_cd16.txt">
+		 * CCW Data Dictionary: ICD_PRCDR_CD16</a>.
 		 */
-		ICD_PRCDR_C16,
+		ICD_PRCDR_CD16,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=
-		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_vrsn_c16.txt">
-		 * CCW Data Dictionary: ICD_PRCDR_VRSN_C16</a>.
+		 * "https://www.ccwdata.org/cs/groups/public/documents/datadictionary/icd_prcdr_vrsn_cd16.txt">
+		 * CCW Data Dictionary: ICD_PRCDR_VRSN_CD16</a>.
 		 */
-		ICD_PRCDR_VRSN_C16,
+		ICD_PRCDR_VRSN_CD16,
 
 		/**
 		 * Type: <code>DATE</code>, max chars: 8. See <a href=
