@@ -33,11 +33,6 @@ import java.util.stream.Collectors;
 public final class DMEClaimGroup {
 
 	/**
-	 * @see Column#VERSION
-	 */
-	public int version;
-
-	/**
 	 * @see Column#DML_IND
 	 */
 	public RecordAction recordAction;
@@ -51,6 +46,11 @@ public final class DMEClaimGroup {
 	 * @see Column#CLM_ID
 	 */
 	public String claimId;
+
+	/**
+	 * @see Column#CLM_GRP_ID
+	 */
+	public String claimGroupId;
 
 	/**
 	 * @see Column#NCH_NEAR_LINE_REC_IDENT_CD
@@ -183,14 +183,14 @@ public final class DMEClaimGroup {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("DMEClaimGroup [version=");
-		builder.append(version);
-		builder.append(", recordAction=");
+		builder.append("DMEClaimGroup [recordAction=");
 		builder.append(recordAction);
 		builder.append(", beneficiaryId=");
 		builder.append(beneficiaryId);
 		builder.append(", claimId=");
 		builder.append(claimId);
+		builder.append(", claimGroupId=");
+		builder.append(claimGroupId);
 		builder.append(", nearLineRecordIdCode=");
 		builder.append(nearLineRecordIdCode);
 		builder.append(", claimTypeCode=");
@@ -546,10 +546,6 @@ public final class DMEClaimGroup {
 	 * the actual data.
 	 */
 	public static enum Column {
-		/**
-		 * Type: (unknown), max chars: (unknown).
-		 */
-		VERSION,
 
 		/**
 		 * Type: (unknown), max chars: (unknown).
@@ -570,6 +566,11 @@ public final class DMEClaimGroup {
 		 * CCW Data Dictionary: CLM_ID</a>.
 		 */
 		CLM_ID,
+
+		/**
+		 * Type: <code>CHAR</code>, max chars: 15.
+		 */
+		CLM_GRP_ID,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 1. See <a href=

@@ -29,11 +29,6 @@ import java.util.stream.Collectors;
  */
 public class PartDEventRow {
 	/**
-	 * @see Column#VERSION
-	 */
-	public int version;
-
-	/**
 	 * @see Column#DML_IND
 	 */
 	public RecordAction recordAction;
@@ -42,6 +37,11 @@ public class PartDEventRow {
 	 * @see Column#PDE_ID
 	 */
 	public String partDEventId;
+
+	/**
+	 * @see Column#CLM_GRP_ID
+	 */
+	public String claimGroupId;
 
 	/**
 	 * @see Column#BENE_ID
@@ -235,12 +235,12 @@ public class PartDEventRow {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("PartDEventRow [version=");
-		builder.append(version);
-		builder.append(", recordAction=");
+		builder.append("PartDEventRow [recordAction=");
 		builder.append(recordAction);
 		builder.append(", partDEventId=");
 		builder.append(partDEventId);
+		builder.append(", claimGroupId=");
+		builder.append(claimGroupId);
 		builder.append(", beneficiaryId=");
 		builder.append(beneficiaryId);
 		builder.append(", prescriptionFillDate=");
@@ -328,11 +328,6 @@ public class PartDEventRow {
 		/**
 		 * Type: (unknown), max chars: (unknown).
 		 */
-		VERSION,
-
-		/**
-		 * Type: (unknown), max chars: (unknown).
-		 */
 		DML_IND,
 
 		/**
@@ -342,6 +337,11 @@ public class PartDEventRow {
 		 * * the field is unencrypted.
 		 */
 		PDE_ID,
+
+		/**
+		 * Type: <code>CHAR</code>, max chars: 15.
+		 */
+		CLM_GRP_ID,
 
 		/**
 		 * Type: <code>CHAR</code>, max chars: 15. See <a href=
