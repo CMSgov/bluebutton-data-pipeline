@@ -21,12 +21,12 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
 import com.justdavis.karl.misc.exceptions.BadCodeMonkeyException;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.StaticRifResource;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.AwsFailureException;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetMonitorWorker;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetTestUtilities;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.S3Utilities;

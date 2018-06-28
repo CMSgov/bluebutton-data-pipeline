@@ -16,10 +16,10 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.TestDataSetLocation;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.synthetic.SyntheticDataFixer.SyntheticDataFile;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetTestUtilities;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.S3Utilities;

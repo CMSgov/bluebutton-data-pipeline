@@ -36,9 +36,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestId;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestId;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.ManifestEntryDownloadTask;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.ManifestEntryDownloadTask.ManifestEntryDownloadResult;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.S3TaskManager;

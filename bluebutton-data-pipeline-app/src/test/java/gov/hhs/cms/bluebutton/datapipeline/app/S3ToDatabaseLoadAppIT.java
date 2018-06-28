@@ -24,12 +24,12 @@ import org.junit.Test;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.StaticRifResource;
 import gov.hhs.cms.bluebutton.data.pipeline.rif.load.LoadAppOptions;
 import gov.hhs.cms.bluebutton.data.pipeline.rif.load.RifLoaderTestUtils;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetMonitor;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetMonitorWorker;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetTestUtilities;

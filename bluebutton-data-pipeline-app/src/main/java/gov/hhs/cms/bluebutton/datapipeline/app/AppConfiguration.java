@@ -8,10 +8,10 @@ import org.apache.commons.codec.binary.Hex;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
 import gov.hhs.cms.bluebutton.data.pipeline.rif.load.LoadAppOptions;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
 
 /**
  * <p>

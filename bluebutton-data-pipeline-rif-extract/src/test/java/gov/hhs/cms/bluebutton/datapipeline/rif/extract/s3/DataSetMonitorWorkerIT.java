@@ -13,10 +13,11 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.codahale.metrics.MetricRegistry;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.StaticRifResource;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 
 /**
  * Integration tests for {@link DataSetMonitorWorker}.

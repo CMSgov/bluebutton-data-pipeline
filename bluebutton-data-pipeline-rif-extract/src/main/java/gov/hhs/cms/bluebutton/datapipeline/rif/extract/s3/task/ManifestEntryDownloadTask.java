@@ -21,10 +21,10 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.justdavis.karl.misc.exceptions.BadCodeMonkeyException;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.AwsFailureException;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.ChecksumException;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetMonitorWorker;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.ManifestEntryDownloadTask.ManifestEntryDownloadResult;
 

@@ -20,6 +20,7 @@ public final class LoadAppOptions implements Serializable {
 	 */
 	public static final int DEFAULT_LOADER_THREADS = Math.max(1, (Runtime.getRuntime().availableProcessors() - 1)) * 2;
 
+	// public static final int DEFAULT_LOADER_THREADS = 1;
 	private final int hicnHashIterations;
 	private final byte[] hicnHashPepper;
 	private final String databaseUrl;

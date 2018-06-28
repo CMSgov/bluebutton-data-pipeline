@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -61,7 +62,9 @@ import gov.hhs.cms.bluebutton.data.model.rif.BeneficiaryHistory;
 import gov.hhs.cms.bluebutton.data.model.rif.CarrierClaim;
 import gov.hhs.cms.bluebutton.data.model.rif.CarrierClaimCsvWriter;
 import gov.hhs.cms.bluebutton.data.model.rif.CarrierClaimLine;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RecordAction;
+import gov.hhs.cms.bluebutton.data.model.rif.RifDataloadHistory;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileEvent;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileRecords;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
@@ -422,6 +425,7 @@ public final class RifLoader {
 		LoadFeatures features = new LoadFeatures(true, false);
 
 		RifFileType rifFileType = fileEvent.getFile().getFileType();
+		DataSetManifest dataSetManifest = fileEvent.getParentFilesEvent().getDataSetManifest();
 
 		// If these are Beneficiary records, first hash their HICNs.
 		if (rifFileType == RifFileType.BENEFICIARY) {
@@ -515,6 +519,8 @@ public final class RifLoader {
 				loadResults.add(new RifRecordLoadResult(rifRecordEvent, loadAction));
 			}
 
+			// updateRifDataloadHistory(entityManager, dataSetManifest, rifFileType);
+
 			entityManager.getTransaction().commit();
 
 			// Update the metrics now that things have been pushed.
@@ -547,6 +553,7 @@ public final class RifLoader {
 			}
 
 			if (entityManager != null)
+				updateRifDataloadHistory(entityManager, dataSetManifest, rifFileType);
 				entityManager.close();
 		}
 	}
@@ -574,6 +581,48 @@ public final class RifLoader {
 
 			entityManager.persist(oldBeneCopy);
 		}
+	}
+
+	/**
+	 * Ensures that a {@link RifDataloadHistory} record is created for the specified
+	 * {@link DataSetManifest} file being loaded
+	 *
+	 * @param entityManager
+	 *            the {@link EntityManager} to use
+	 * @param dataSetManifest
+	 *            the {@link DataSetManifest} for the records being processed
+	 * @param rifFileType
+	 *            the {@link RifFileType} for the records being processed
+	 */
+	private void updateRifDataloadHistory(EntityManager entityManager, DataSetManifest dataSetManifest,
+			RifFileType rifFileType) {
+
+		Timestamp dataSetManifestTimestamp = Timestamp.from(dataSetManifest.getTimestamp());
+
+		RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(
+				rifFileType.toString(),
+				dataSetManifestTimestamp, dataSetManifest.getSequenceId());
+
+		RifDataloadHistory rifDataloadHistory = null;
+		rifDataloadHistory = entityManager.find(RifDataloadHistory.class,
+				id);
+
+		entityManager.getTransaction().begin();
+		if (rifDataloadHistory == null) {
+			RifDataloadHistory newRifDataloadHistory = new RifDataloadHistory();
+			newRifDataloadHistory.setRecordType(rifFileType.toString());
+			newRifDataloadHistory.setCreateUpdateTimestamp(dataSetManifestTimestamp);
+			newRifDataloadHistory.setSequenceId(dataSetManifest.getSequenceId());
+			newRifDataloadHistory
+					.setDataloadFilename(
+							dataSetManifest.getEntries() == null ? "No file name supplied"
+							: dataSetManifest.getEntries().get(0).getName());
+			entityManager.persist(newRifDataloadHistory);
+		} else {
+			entityManager.merge(rifDataloadHistory);
+		}
+
+		entityManager.getTransaction().commit();
 	}
 
 	/**

@@ -15,10 +15,11 @@ import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.codahale.metrics.MetricRegistry;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFilesEvent;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestId;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.ExtractionOptions;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestId;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetQueue.QueuedDataSet;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.DataSetMoveTask;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.S3TaskManager;
@@ -172,7 +173,7 @@ public final class DataSetMonitorWorker implements Runnable {
 				.map(manifestEntry -> new S3RifFile(appMetrics, manifestEntry,
 						dataSetToProcess.getManifestEntryDownloads().get(manifestEntry)))
 				.collect(Collectors.toList());
-		RifFilesEvent rifFilesEvent = new RifFilesEvent(manifestToProcess.getTimestamp(), new ArrayList<>(rifFiles));
+		RifFilesEvent rifFilesEvent = new RifFilesEvent(manifestToProcess, new ArrayList<>(rifFiles));
 
 		/*
 		 * Now we hand that off to the DataSetMonitorListener, to do the *real*

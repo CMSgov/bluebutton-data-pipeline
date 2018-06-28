@@ -26,8 +26,8 @@ import com.justdavis.karl.misc.exceptions.BadCodeMonkeyException;
 
 import gov.hhs.cms.bluebutton.data.model.rif.RifFile;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.exceptions.AwsFailureException;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest.DataSetManifestEntry;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.task.ManifestEntryDownloadTask.ManifestEntryDownloadResult;
 
 /**

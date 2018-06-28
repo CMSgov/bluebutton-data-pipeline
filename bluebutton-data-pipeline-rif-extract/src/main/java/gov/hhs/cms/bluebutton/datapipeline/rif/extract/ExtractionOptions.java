@@ -7,8 +7,8 @@ import java.util.function.Predicate;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
-import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.DataSetManifest;
 import gov.hhs.cms.bluebutton.datapipeline.rif.extract.s3.S3Utilities;
 
 /**

@@ -1,5 +1,6 @@
 package gov.hhs.cms.bluebutton.data.pipeline.rif.load;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
@@ -18,7 +19,6 @@ import javax.persistence.criteria.Root;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +31,11 @@ import gov.hhs.cms.bluebutton.data.model.rif.BeneficiaryHistory;
 import gov.hhs.cms.bluebutton.data.model.rif.BeneficiaryHistory_;
 import gov.hhs.cms.bluebutton.data.model.rif.CarrierClaim;
 import gov.hhs.cms.bluebutton.data.model.rif.CarrierClaimLine;
+import gov.hhs.cms.bluebutton.data.model.rif.DataSetManifest;
+import gov.hhs.cms.bluebutton.data.model.rif.RifDataloadHistory;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileEvent;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFileRecords;
+import gov.hhs.cms.bluebutton.data.model.rif.RifFileType;
 import gov.hhs.cms.bluebutton.data.model.rif.RifFilesEvent;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.StaticRifResource;
 import gov.hhs.cms.bluebutton.data.model.rif.samples.StaticRifResourceGroup;
@@ -132,8 +135,9 @@ public final class RifLoaderIT {
 		List<StaticRifResource> sampleResources = Arrays.stream(sampleGroup.getResources())
 				.collect(Collectors.toList());
 
-		RifFilesEvent rifFilesEvent = new RifFilesEvent(Instant.now(),
+		RifFilesEvent rifFilesEvent = new RifFilesEvent(new DataSetManifest(Instant.now()),
 				sampleResources.stream().map(r -> r.toRifFile()).collect(Collectors.toList()));
+		Instant dataSetManifestTimestamp = rifFilesEvent.getDataSetManifest().getTimestamp();
 
 		// Create the processors that will handle each stage of the pipeline.
 		MetricRegistry appMetrics = new MetricRegistry();
@@ -180,9 +184,11 @@ public final class RifLoaderIT {
 			}
 
 			LOGGER.info("Checking DB for records for: {}", rifResource);
-			RifFilesEvent rifFilesEventSingle = new RifFilesEvent(Instant.now(), rifResource.toRifFile());
+			RifFilesEvent rifFilesEventSingle = new RifFilesEvent(new DataSetManifest(dataSetManifestTimestamp),
+					rifResource.toRifFile());
 			RifFileRecords rifFileRecordsCopy = processor.produceRecords(rifFilesEventSingle.getFileEvents().get(0));
-			assertAreInDatabase(options, entityManagerFactory, rifFileRecordsCopy.getRecords().map(r -> r.getRecord()));
+			assertAreInDatabase(options, entityManagerFactory, rifFileRecordsCopy.getRecords().map(r -> r.getRecord()),
+					rifFilesEventSingle.getDataSetManifest());
 		}
 		LOGGER.info("All records found in DB.");
 	}
@@ -205,9 +211,12 @@ public final class RifLoaderIT {
 	 *            the {@link EntityManagerFactory} to use
 	 * @param records
 	 *            the RIF records to verify
+	 * @param dataSetManifest
+	 *            use the {@link DataSetManifest} to verify records are loaded into
+	 *            RifDataloadHistory table
 	 */
 	private static void assertAreInDatabase(LoadAppOptions options, EntityManagerFactory entityManagerFactory,
-			Stream<Object> records) {
+			Stream<Object> records, DataSetManifest dataSetManifest) {
 		EntityManager entityManager = null;
 		try {
 			entityManager = entityManagerFactory.createEntityManager();
@@ -239,11 +248,41 @@ public final class RifLoaderIT {
 					Object recordId = entityManagerFactory.getPersistenceUnitUtil().getIdentifier(record);
 					Object recordFromDb = entityManager.find(record.getClass(), recordId);
 					Assert.assertNotNull(recordFromDb);
+					assertAreInRifDataloadHistoryTable(entityManager, record, dataSetManifest);
 				}
 			}
 		} finally {
 			if (entityManager != null)
 				entityManager.close();
 		}
+	}
+
+	/**
+	 * Verifies that the specified RifDataloadHistory record is inserted actually
+	 * into the database based on what is in the the dataSetManifest
+	 * 
+	 * @param entityManager
+	 *            the {@link EntityManager} to use
+	 * @param record
+	 *            the RIF record to verify
+	 * @param dataSetManifest
+	 *            use the {@link DataSetManifest} to verify records are loaded into
+	 *            RifDataloadHistory table
+	 */
+	private static void assertAreInRifDataloadHistoryTable(EntityManager entityManager, Object record,
+			DataSetManifest dataSetManifest) {
+		if (record instanceof Beneficiary) {
+			RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(RifFileType.BENEFICIARY.toString(),
+					Timestamp.from(dataSetManifest.getTimestamp()), dataSetManifest.getSequenceId());
+
+			Assert.assertNotNull(entityManager.find(RifDataloadHistory.class, id));
+		}
+		if (record instanceof CarrierClaim) {
+			RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(RifFileType.CARRIER.toString(),
+					Timestamp.from(dataSetManifest.getTimestamp()), dataSetManifest.getSequenceId());
+
+			Assert.assertNotNull(entityManager.find(RifDataloadHistory.class, id));
+		}
+
 	}
 }
