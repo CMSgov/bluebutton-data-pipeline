@@ -1,6 +1,5 @@
 package gov.hhs.cms.bluebutton.data.pipeline.rif.load;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
@@ -259,7 +258,9 @@ public final class RifLoaderIT {
 
 	/**
 	 * Verifies that the specified RifDataloadHistory record is inserted actually
-	 * into the database based on what is in the the dataSetManifest
+	 * into the database based on what is in the the dataSetManifest. Only checking
+	 * record types of Beneficiary and CarrierClaim for now but all claim types
+	 * should be in the database.
 	 * 
 	 * @param entityManager
 	 *            the {@link EntityManager} to use
@@ -273,14 +274,12 @@ public final class RifLoaderIT {
 			DataSetManifest dataSetManifest) {
 		if (record instanceof Beneficiary) {
 			RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(RifFileType.BENEFICIARY.toString(),
-					Timestamp.from(dataSetManifest.getTimestamp()), dataSetManifest.getSequenceId());
-
+					dataSetManifest.getTimestamp(), dataSetManifest.getSequenceId());
 			Assert.assertNotNull(entityManager.find(RifDataloadHistory.class, id));
 		}
 		if (record instanceof CarrierClaim) {
 			RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(RifFileType.CARRIER.toString(),
-					Timestamp.from(dataSetManifest.getTimestamp()), dataSetManifest.getSequenceId());
-
+					dataSetManifest.getTimestamp(), dataSetManifest.getSequenceId());
 			Assert.assertNotNull(entityManager.find(RifDataloadHistory.class, id));
 		}
 

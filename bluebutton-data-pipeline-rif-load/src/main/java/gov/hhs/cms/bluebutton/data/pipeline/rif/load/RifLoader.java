@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -519,8 +519,6 @@ public final class RifLoader {
 				loadResults.add(new RifRecordLoadResult(rifRecordEvent, loadAction));
 			}
 
-			// updateRifDataloadHistory(entityManager, dataSetManifest, rifFileType);
-
 			entityManager.getTransaction().commit();
 
 			// Update the metrics now that things have been pushed.
@@ -597,13 +595,17 @@ public final class RifLoader {
 	private void updateRifDataloadHistory(EntityManager entityManager, DataSetManifest dataSetManifest,
 			RifFileType rifFileType) {
 
-		Timestamp dataSetManifestTimestamp = Timestamp.from(dataSetManifest.getTimestamp());
+		Instant dataSetManifestTimestamp = dataSetManifest.getTimestamp();
 
 		RifDataloadHistory.PrimaryKey id = new RifDataloadHistory.PrimaryKey(
 				rifFileType.toString(),
 				dataSetManifestTimestamp, dataSetManifest.getSequenceId());
 
 		RifDataloadHistory rifDataloadHistory = null;
+		/*
+		 * Checking to see if this RIF file has already been loaded to the
+		 * RifDataloadHistory table
+		 */
 		rifDataloadHistory = entityManager.find(RifDataloadHistory.class,
 				id);
 
