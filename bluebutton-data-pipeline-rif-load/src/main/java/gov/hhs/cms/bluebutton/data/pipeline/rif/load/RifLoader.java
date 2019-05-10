@@ -555,6 +555,7 @@ public final class RifLoader {
 			oldBeneCopy.setHicnUnhashed(oldBeneficiaryRecord.getHicnUnhashed());
 			oldBeneCopy.setSex(oldBeneficiaryRecord.getSex());
 			oldBeneCopy.setMedicareBeneficiaryId(oldBeneficiaryRecord.getMedicareBeneficiaryId());
+			oldBeneCopy.setParentBeneficiary(newBeneficiaryRecord);
 
 			entityManager.persist(oldBeneCopy);
 		}
